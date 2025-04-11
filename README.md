@@ -8,8 +8,8 @@
                       
 Team Name:- CoBrain 
 
-Members :- Bhavesh Mishra
-           Aryan Singh 
-           Simran Khan
-           Singh Sneha Krishna                
+Members :- Bhavesh Mishra ;
+           Aryan Singh ;
+           Simran Khan ;
+           Singh Sneha Krishna.                
 
