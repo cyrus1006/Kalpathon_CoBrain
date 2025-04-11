@@ -5,10 +5,11 @@
                       How can the gap between lost and found be bridged more 
                       effectively? (Create a solution where users can report lost 
                       items and match them with found items.)  
+                      
 Team Name:- CoBrain 
 
 Members :- Bhavesh Mishra
            Aryan Singh 
-           Simran Khan   
+           Simran Khan
            Singh Sneha Krishna                
 
