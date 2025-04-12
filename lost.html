@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lost & Found Bridge</title>
@@ -102,6 +102,11 @@
             <label class="block text-sm font-medium text-gray-700">Contact Details</label>
             <input type="text" id="contactInfo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Email or Phone">
           </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Upload Image</label>
+            <input type="file" id="itemImage" accept="image/*" class="mt-1 block w-full" />
+          </div>
+          
           <div class="flex justify-end space-x-3">
             <button type="button" id="closeModal" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">Cancel</button>
             <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">Submit</button>
@@ -110,6 +115,7 @@
       </div>
     </div>
   </div>
+
   <script src="lost.js"></script>
 </body>
 </html>
