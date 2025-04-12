@@ -1,6 +1,10 @@
+// file.js
+
+// Load data from localStorage
 let lostItems = JSON.parse(localStorage.getItem('lostItems')) || [];
 let foundItems = JSON.parse(localStorage.getItem('foundItems')) || [];
 
+// DOM references
 const reportModal = document.getElementById('reportModal');
 const reportForm = document.getElementById('reportForm');
 const modalTitle = document.getElementById('modalTitle');
@@ -12,6 +16,7 @@ const foundItemsList = document.getElementById('foundItemsList');
 
 let currentReportType = '';
 
+// Event Listeners
 reportLostBtn.addEventListener('click', () => openModal('lost'));
 reportFoundBtn.addEventListener('click', () => openModal('found'));
 closeModal.addEventListener('click', () => reportModal.classList.add('hidden'));
@@ -33,12 +38,14 @@ document.getElementById('searchFound').addEventListener('input', (e) => {
   updateItemsDisplay(document.getElementById('searchLost').value.toLowerCase(), e.target.value.toLowerCase());
 });
 
+// Modal control
 function openModal(type) {
   currentReportType = type;
   modalTitle.textContent = `Report ${type.charAt(0).toUpperCase() + type.slice(1)} Item`;
   reportModal.classList.remove('hidden');
 }
 
+// Handle form submission
 function handleSubmit(e) {
   e.preventDefault();
 
@@ -79,7 +86,7 @@ function handleSubmit(e) {
     }
 
     reportForm.reset();
-    document.getElementById('itemImage').value = '';
+    fileInput.value = '';
     reportModal.classList.add('hidden');
     updateItemsDisplay();
     matchItems();
@@ -88,50 +95,62 @@ function handleSubmit(e) {
   reader.readAsDataURL(file);
 }
 
+// Update items list on screen
 function updateItemsDisplay(lostFilter = '', foundFilter = '') {
-  lostItemsList.innerHTML = lostItems
-    .filter(item => !item.isMatched && item.description.toLowerCase().includes(lostFilter))
-    .map((item, index) => createItemCard(item, 'lost', index))
-    .join('');
+  lostItemsList.innerHTML = '';
+  foundItemsList.innerHTML = '';
 
-  foundItemsList.innerHTML = foundItems
+  lostItems
+    .filter(item => !item.isMatched && item.description.toLowerCase().includes(lostFilter))
+    .forEach((item, index) => lostItemsList.appendChild(createItemCard(item, 'lost', index)));
+
+  foundItems
     .filter(item => !item.isMatched && item.description.toLowerCase().includes(foundFilter))
-    .map((item, index) => createItemCard(item, 'found', index))
-    .join('');
+    .forEach((item, index) => foundItemsList.appendChild(createItemCard(item, 'found', index)));
 }
 
+// Create item card dynamically
 function createItemCard(item, type, index) {
+  const card = document.createElement('div');
+  card.className = `border rounded-lg p-4 hover:shadow-md transition-shadow ${item.resolved ? 'opacity-50' : ''}`;
+
   const iconClass = type === 'lost' ? 'fa-search text-red-500' : 'fa-hand-holding text-green-500';
   const date = new Date(item.timestamp).toLocaleDateString();
 
-  return `
-    <div class="border rounded-lg p-4 hover:shadow-md transition-shadow ${item.resolved ? 'opacity-50' : ''}">
-      <div class="flex items-start space-x-4">
-        <div class="flex-1">
-          <div class="flex items-center">
-            <i class="fas ${iconClass} mr-2"></i>
-            <h3 class="font-medium text-gray-900">${item.description}</h3>
-          </div>
-          <p class="text-sm text-gray-500 mt-1">Location: ${item.location}</p>
-          <p class="text-sm text-gray-500">Reported by: ${item.reporterName}</p>
-          <p class="text-sm text-gray-500">Contact: ${item.contact}</p>
-          <p class="text-sm text-gray-500">Date: ${date}</p>
-          <div class="mt-3 flex items-center space-x-4">
-            <label class="flex items-center space-x-2 text-sm">
-              <input type="checkbox" ${item.resolved ? 'checked' : ''} onchange="toggleResolved('${type}', ${index})" />
-              <span>Mark as Resolved</span>
-            </label>
-            <button onclick="deleteItem('${type}', ${index})" class="text-red-500 hover:underline text-sm">
-              Delete
-            </button>
-          </div>
+  card.innerHTML = `
+    <div class="flex items-start space-x-4">
+      <div class="flex-1">
+        <div class="flex items-center">
+          <i class="fas ${iconClass} mr-2"></i>
+          <h3 class="font-medium text-gray-900">${item.description}</h3>
         </div>
-        ${item.image ? `<img src="${item.image}" alt="Item image" class="w-20 h-20 object-cover rounded-md border">` : ''}
+        <p class="text-sm text-gray-500 mt-1">Location: ${item.location}</p>
+        <p class="text-sm text-gray-500">Reported by: ${item.reporterName}</p>
+        <p class="text-sm text-gray-500">Contact: ${item.contact}</p>
+        <p class="text-sm text-gray-500">Date: ${date}</p>
+        <div class="mt-3 flex items-center space-x-4">
+          <label class="flex items-center space-x-2 text-sm">
+            <input type="checkbox" ${item.resolved ? 'checked' : ''} />
+            <span>Mark as Resolved</span>
+          </label>
+          <button class="text-red-500 hover:underline text-sm">Delete</button>
+        </div>
       </div>
+      ${item.image ? `<img src="${item.image}" alt="Item image" class="w-20 h-20 object-cover rounded-md border">` : ''}
     </div>
   `;
+
+  // Event listeners for resolve and delete
+  const checkbox = card.querySelector('input[type="checkbox"]');
+  checkbox.addEventListener('change', () => toggleResolved(type, index));
+
+  const deleteBtn = card.querySelector('button');
+  deleteBtn.addEventListener('click', () => deleteItem(type, index));
+
+  return card;
 }
 
+// Toggle item resolution
 function toggleResolved(type, index) {
   if (type === 'lost') {
     lostItems[index].resolved = !lostItems[index].resolved;
@@ -140,10 +159,10 @@ function toggleResolved(type, index) {
     foundItems[index].resolved = !foundItems[index].resolved;
     localStorage.setItem('foundItems', JSON.stringify(foundItems));
   }
-
   updateItemsDisplay();
 }
 
+// Delete an item
 function deleteItem(type, index) {
   if (type === 'lost') {
     lostItems.splice(index, 1);
@@ -152,10 +171,10 @@ function deleteItem(type, index) {
     foundItems.splice(index, 1);
     localStorage.setItem('foundItems', JSON.stringify(foundItems));
   }
-
   updateItemsDisplay();
 }
 
+// Attempt to match lost and found items based on keyword similarity
 function matchItems() {
   lostItems.forEach((lostItem, lostIndex) => {
     if (lostItem.isMatched || lostItem.resolved) return;
@@ -183,6 +202,7 @@ function matchItems() {
   updateItemsDisplay();
 }
 
+// Show a floating notification for matches
 function showMatchNotification(lostItem, foundItem) {
   const notification = document.createElement('div');
   notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50';
@@ -191,7 +211,6 @@ function showMatchNotification(lostItem, foundItem) {
     <p class="text-sm">Lost: ${lostItem.description}</p>
     <p class="text-sm">Found: ${foundItem.description}</p>
   `;
-
   document.body.appendChild(notification);
 
   setTimeout(() => {
@@ -199,5 +218,5 @@ function showMatchNotification(lostItem, foundItem) {
   }, 5000);
 }
 
-// Initial render
+// Initial load
 updateItemsDisplay();
