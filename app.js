@@ -1,4 +1,3 @@
-
 let lostItems = JSON.parse(localStorage.getItem('lostItems')) || [];
 let foundItems = JSON.parse(localStorage.getItem('foundItems')) || [];
 
@@ -26,7 +25,6 @@ document.getElementById('viewFoundBtn').addEventListener('click', () => {
   window.scrollTo({ top: foundItemsList.offsetTop - 100, behavior: 'smooth' });
 });
 
-// Search handlers
 document.getElementById('searchLost').addEventListener('input', (e) => {
   updateItemsDisplay(e.target.value.toLowerCase(), document.getElementById('searchFound').value.toLowerCase());
 });
@@ -44,33 +42,50 @@ function openModal(type) {
 function handleSubmit(e) {
   e.preventDefault();
 
-  const item = {
-    reporterName: document.getElementById('reporterName').value,
-    description: document.getElementById('itemDescription').value,
-    location: document.getElementById('location').value,
-    contact: document.getElementById('contactInfo').value,
-    timestamp: new Date().toISOString(),
-    isMatched: false,
-    resolved: false
-  };
+  const fileInput = document.getElementById('itemImage');
+  const file = fileInput.files[0];
 
-  if (!item.reporterName || !item.description || !item.location || !item.contact) {
-    alert("Please fill in all fields before submitting.");
+  if (!file) {
+    alert("Please upload an image.");
     return;
   }
 
-  if (currentReportType === 'lost') {
-    lostItems.push(item);
-    localStorage.setItem('lostItems', JSON.stringify(lostItems));
-  } else {
-    foundItems.push(item);
-    localStorage.setItem('foundItems', JSON.stringify(foundItems));
-  }
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const base64Image = event.target.result;
 
-  reportForm.reset();
-  reportModal.classList.add('hidden');
-  updateItemsDisplay();
-  matchItems();
+    const item = {
+      reporterName: document.getElementById('reporterName').value,
+      description: document.getElementById('itemDescription').value,
+      location: document.getElementById('location').value,
+      contact: document.getElementById('contactInfo').value,
+      image: base64Image,
+      timestamp: new Date().toISOString(),
+      isMatched: false,
+      resolved: false
+    };
+
+    if (!item.reporterName || !item.description || !item.location || !item.contact) {
+      alert("Please fill in all fields before submitting.");
+      return;
+    }
+
+    if (currentReportType === 'lost') {
+      lostItems.push(item);
+      localStorage.setItem('lostItems', JSON.stringify(lostItems));
+    } else {
+      foundItems.push(item);
+      localStorage.setItem('foundItems', JSON.stringify(foundItems));
+    }
+
+    reportForm.reset();
+    document.getElementById('itemImage').value = '';
+    reportModal.classList.add('hidden');
+    updateItemsDisplay();
+    matchItems();
+  };
+
+  reader.readAsDataURL(file);
 }
 
 function updateItemsDisplay(lostFilter = '', foundFilter = '') {
@@ -91,8 +106,8 @@ function createItemCard(item, type, index) {
 
   return `
     <div class="border rounded-lg p-4 hover:shadow-md transition-shadow ${item.resolved ? 'opacity-50' : ''}">
-      <div class="flex items-start justify-between">
-        <div>
+      <div class="flex items-start space-x-4">
+        <div class="flex-1">
           <div class="flex items-center">
             <i class="fas ${iconClass} mr-2"></i>
             <h3 class="font-medium text-gray-900">${item.description}</h3>
@@ -111,6 +126,7 @@ function createItemCard(item, type, index) {
             </button>
           </div>
         </div>
+        ${item.image ? `<img src="${item.image}" alt="Item image" class="w-20 h-20 object-cover rounded-md border">` : ''}
       </div>
     </div>
   `;
